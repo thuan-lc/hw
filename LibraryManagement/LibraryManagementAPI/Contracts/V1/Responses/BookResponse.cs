@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using LibraryManagementAPI.Domains;
+using Microsoft.AspNetCore.Identity;
 using System;
 
 namespace LibraryManagementAPI.Contracts.V1.Responses
@@ -10,7 +11,7 @@ namespace LibraryManagementAPI.Contracts.V1.Responses
         public double Credits { get; set; }
         public int Quantities { get; set; }
         public int AvailableQuantities { get; set; }
-        public IdentityUser CreatedBy { get; set; }
+        public string CreatedBy { get; set; }
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
     }

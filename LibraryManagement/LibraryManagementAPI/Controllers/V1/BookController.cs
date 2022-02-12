@@ -3,8 +3,10 @@ using LibraryManagementAPI.Contracts;
 using LibraryManagementAPI.Contracts.V1.Requests;
 using LibraryManagementAPI.Contracts.V1.Responses;
 using LibraryManagementAPI.Domains;
+using LibraryManagementAPI.Enums;
 using LibraryManagementAPI.Extensions;
 using LibraryManagementAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,6 +18,7 @@ namespace LibraryManagementAPI.Controllers.V1
 {
     [ApiController]
     [ApiVersion(ApiRoutes.V1)]
+    [Authorize(Roles = "Librarian")]
     public class BookController:Controller
     {
         private readonly IBookService _bookService;
@@ -56,6 +59,7 @@ namespace LibraryManagementAPI.Controllers.V1
             var book = _mapper.Map<Book>(bookRequest);
             book.Created = currentDateTime;
             book.Modified = currentDateTime;
+            book.AvailableQuantities = bookRequest.Quantities;
 
             if (book.Id == Guid.Empty)
             {
@@ -71,7 +75,7 @@ namespace LibraryManagementAPI.Controllers.V1
             var url = Url.RouteUrl(filteredRouteData);
 
             var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}" + url;
-            var locationUrl = baseUrl + "/" + ApiRoutes.Books.GetById.Replace("{version:apiVersion}", ApiRoutes.V1).Replace("{bookId}", book.Id.ToString());
+            var locationUrl = baseUrl + "/" + book.Id.ToString();
 
             return Created(locationUrl, _mapper.Map<BookResponse>(book));
         }

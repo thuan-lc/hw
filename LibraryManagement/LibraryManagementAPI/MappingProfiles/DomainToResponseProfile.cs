@@ -5,11 +5,13 @@ using LibraryManagementAPI.Domains;
 
 namespace LibraryManagementAPI.MappingProfiles
 {
-    public class DomainToResponseProfile:Profile
+    public class DomainToResponseProfile : Profile
     {
         public DomainToResponseProfile()
         {
-            CreateMap<Book, BookResponse>();
+            CreateMap<Book, BookResponse>()
+                .ForMember(dest => dest.CreatedBy, opt =>
+                  opt.MapFrom(src => src.CreatedBy.UserName));
             CreateMap<CreateBookRequest, Book>();
         }
     }

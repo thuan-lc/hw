@@ -19,12 +19,12 @@ namespace LibraryManagementAPI.Services
 
         public async Task<List<Book>> GetAllAsync()
         {
-            return await _dataContext.Books.ToListAsync();
+            return await _dataContext.Books.Include(b => b.CreatedBy).ToListAsync();
         }
 
         public async Task<Book> GetByIdAsync(Guid bookId)
         {
-            return await _dataContext.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+            return await _dataContext.Books.Include(b => b.CreatedBy).FirstOrDefaultAsync(b => b.Id == bookId);
         }
 
         public async Task<bool> CreateAsync(Book bookToCreate)
@@ -35,7 +35,7 @@ namespace LibraryManagementAPI.Services
                 {
                     _dataContext.Books.Add(bookToCreate);
                     var created = await _dataContext.SaveChangesAsync();
-                    
+
                     await transaction.CommitAsync();
 
                     return created > 0;

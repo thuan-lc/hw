@@ -1,5 +1,10 @@
 ﻿using LibraryManagementAPI.Contracts;
+using LibraryManagementAPI.Contracts.V1.Requests;
+using LibraryManagementAPI.Contracts.V1.Responses;
+using LibraryManagementAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace LibraryManagementAPI.Controllers.V1
 {
@@ -7,11 +12,82 @@ namespace LibraryManagementAPI.Controllers.V1
     [ApiVersion(ApiRoutes.V1)]
     public class IdentityController : Controller
     {
-        [HttpGet]
-        [Route(ApiRoutes.Identity.Register)]
-        public IActionResult Register()
+        private readonly IIdentityService _identityService;
+
+        public IdentityController(IIdentityService identityService)
         {
-            return Ok("OK");
+            _identityService = identityService;
+        }
+
+        [HttpPost]
+        [Route(ApiRoutes.Identity.Register)]
+        public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new AuthFailedResponse
+                {
+                    Errors = ModelState.Values.SelectMany(x => x.Errors.Select(xx => xx.ErrorMessage))
+                });
+            }
+
+            var authResponse = await _identityService.RegisterAsync(request.Email, request.Password, request.UserRole.GetHashCode());
+
+            if (!authResponse.Success)
+            {
+                return BadRequest(new AuthFailedResponse
+                {
+                    Errors = authResponse.Errors
+                });
+            }
+
+            return Ok(new AuthSuccessResponse
+            {
+                Token = authResponse.Token,
+                RefreshToken = authResponse.RefreshToken
+            });
+        }
+
+        [HttpPost]
+        [Route(ApiRoutes.Identity.Login)]
+        public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
+        {
+            var authResponse = await _identityService.LoginAsync(request.Email, request.Password);
+
+            if (!authResponse.Success)
+            {
+                return BadRequest(new AuthFailedResponse
+                {
+                    Errors = authResponse.Errors
+                });
+            }
+
+            return Ok(new AuthSuccessResponse
+            {
+                Token = authResponse.Token,
+                RefreshToken = authResponse.RefreshToken
+            });
+        }
+
+        [HttpPost]
+        [Route(ApiRoutes.Identity.Refresh)]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request)
+        {
+            var authResponse = await _identityService.RefreshTokenAsync(request.Token, request.RefreshToken);
+
+            if (!authResponse.Success)
+            {
+                return BadRequest(new AuthFailedResponse
+                {
+                    Errors = authResponse.Errors
+                });
+            }
+
+            return Ok(new AuthSuccessResponse
+            {
+                Token = authResponse.Token,
+                RefreshToken = authResponse.RefreshToken
+            });
         }
     }
 }
