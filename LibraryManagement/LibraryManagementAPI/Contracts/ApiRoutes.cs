@@ -32,7 +32,7 @@
             public const string GetByUser = ControllerRoute + "/{userId}";
             public const string Create = ControllerRoute;
             public const string Update = ControllerRoute;
-            public const string Delete = ControllerRoute + "/{TransId}";
+            public const string Delete = ControllerRoute + "/{transId}";
         }
 
         public static class Test
